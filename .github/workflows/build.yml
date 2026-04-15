@@ -5,23 +5,27 @@ on:
 
 jobs:
   build:
-    runs-on: ubuntu-latest
-    container:
-      image: mcr.microsoft.com/devcontainers/base:bookworm
+    runs-on: ubuntu-22.04
     steps:
-      - name: Checkout
+      - name: Checkout repo with submodules
         uses: actions/checkout@v4
         with:
           fetch-depth: 1
           submodules: recursive
           token: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Build deb
+      - name: Install devcontainer build tools
+        run: |
+          sudo apt update
+          sudo apt install -y devscripts build-essential debhelper fakeroot \
+            bc bison flex libssl-dev gcc-aarch64-linux-gnu
+
+      - name: Build kernel deb
         run: |
           make deb
 
-      - name: Upload debs
+      - name: Upload built deb packages
         uses: actions/upload-artifact@v4
         with:
-          name: linux-aw2501-debs
+          name: kernel-debs
           path: "*.deb"
