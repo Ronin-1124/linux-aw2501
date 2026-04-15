@@ -7,25 +7,27 @@ jobs:
   build:
     runs-on: ubuntu-22.04
     steps:
-      - name: Checkout repo with submodules
+      - name: Checkout
         uses: actions/checkout@v4
         with:
           fetch-depth: 1
           submodules: recursive
           token: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Install devcontainer build tools
+      - name: Install all build dependencies
         run: |
           sudo apt update
-          sudo apt install -y devscripts build-essential debhelper fakeroot \
-            bc bison flex libssl-dev gcc-aarch64-linux-gnu
+          sudo apt install -y \
+            build-essential bc bison flex libssl-dev \
+            debhelper devscripts fakeroot dh-exec \
+            gcc-aarch64-linux-gnu crossbuild-essential-arm64
 
       - name: Build kernel deb
         run: |
           make deb
 
-      - name: Upload built deb packages
+      - name: Upload deb packages
         uses: actions/upload-artifact@v4
         with:
-          name: kernel-debs
+          name: linux-aw2501-debs
           path: "*.deb"
