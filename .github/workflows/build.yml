@@ -1,37 +1,27 @@
-name: Build linux-aw2501 for Cubie A7A
+name: Build linux-aw2501
 
 on:
   workflow_dispatch:
 
 jobs:
   build:
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-latest
+    container:
+      image: mcr.microsoft.com/devcontainers/base:bookworm
     steps:
-      - name: Checkout repo
+      - name: Checkout
         uses: actions/checkout@v4
         with:
           fetch-depth: 1
           submodules: recursive
           token: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Install build dependencies
+      - name: Build deb
         run: |
-          sudo apt update
-          sudo apt install -y \
-            build-essential bc bison flex libssl-dev \
-            debhelper devscripts fakeroot \
-            crossbuild-essential-arm64
-
-      - name: Build kernel package
-        run: |
-          export ARCH=arm64
-          export CROSS_COMPILE=aarch64-linux-gnu-
           make deb
 
-      - name: Upload deb packages
+      - name: Upload debs
         uses: actions/upload-artifact@v4
         with:
-          name: kernel-debs
-          path: |
-            *.deb
-            debian/*.deb
+          name: linux-aw2501-debs
+          path: "*.deb"
