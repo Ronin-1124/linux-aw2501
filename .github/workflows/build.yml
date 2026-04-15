@@ -5,7 +5,9 @@ on:
 
 jobs:
   build:
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-latest
+    container:
+      image: mcr.microsoft.com/devcontainers/base:bookworm
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -14,19 +16,22 @@ jobs:
           submodules: recursive
           token: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Install all build dependencies
+      - name: Install full build dependencies (same as devcontainer)
         run: |
-          sudo apt update
-          sudo apt install -y \
+          apt update
+          apt install -y \
             build-essential bc bison flex libssl-dev \
-            debhelper devscripts fakeroot dh-exec \
-            gcc-aarch64-linux-gnu crossbuild-essential-arm64
+            devscripts debhelper fakeroot dh-exec \
+            gcc-aarch64-linux-gnu crossbuild-essential-arm64 \
+            git lsb-release wget unzip zip
 
       - name: Build kernel deb
         run: |
+          export ARCH=arm64
+          export CROSS_COMPILE=aarch64-linux-gnu-
           make deb
 
-      - name: Upload deb packages
+      - name: Upload debs
         uses: actions/upload-artifact@v4
         with:
           name: linux-aw2501-debs
